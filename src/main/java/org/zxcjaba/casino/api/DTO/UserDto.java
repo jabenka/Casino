@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -31,7 +33,8 @@ public class UserDto {
     @NonNull
     String password;
 
-
+    @NonNull
+    BigDecimal balance;
 
 
 

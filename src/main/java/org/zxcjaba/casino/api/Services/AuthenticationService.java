@@ -12,6 +12,8 @@ import org.zxcjaba.casino.api.DTO.UserDto;
 import org.zxcjaba.casino.persistence.Entity.UserEntity;
 import org.zxcjaba.casino.persistence.Repository.UserRepository;
 
+import java.math.BigDecimal;
+
 @Service
 public class AuthenticationService {
 
@@ -43,6 +45,7 @@ public class AuthenticationService {
                 .surname(entity.getSurname())
                 .email(entity.getEmail())
                 .password(entity.getPassword())
+                .balance(entity.getBalance())
                 .build();
 
     }
@@ -54,7 +57,7 @@ public class AuthenticationService {
             user.setEmail(registrationDto.getEmail());
             user.setName(registrationDto.getName());
             user.setSurname(registrationDto.getSurname());
-
+            user.setBalance(BigDecimal.valueOf(100));
             user.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
 
             userRepository.saveAndFlush(user);
@@ -65,6 +68,7 @@ public class AuthenticationService {
                     .surname(user.getSurname())
                     .email(user.getEmail())
                     .password(user.getPassword())
+                    .balance(new BigDecimal(String.valueOf(100)))
                     .build();
 
     }

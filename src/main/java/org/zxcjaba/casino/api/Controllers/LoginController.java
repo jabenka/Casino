@@ -44,6 +44,7 @@ public class LoginController {
                 .surname(authenticatedUser.getSurname())
                 .email(authenticatedUser.getEmail())
                 .password(authenticatedUser.getPassword())
+                .balance(authenticatedUser.getBalance())
                 .build()
         );
 
