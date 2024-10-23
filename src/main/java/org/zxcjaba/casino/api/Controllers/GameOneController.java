@@ -20,6 +20,7 @@ import org.zxcjaba.casino.persistence.Repository.UserRepository;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
+import java.util.Locale;
 
 @RestController
 @RequestMapping("/roulette")
@@ -54,7 +55,6 @@ public class GameOneController {
         }
 
 
-        //check
 
         GameOneDto response=new GameOneDto();
         String win="";
@@ -72,21 +72,22 @@ public class GameOneController {
                throw new RolutteException("you can only choose color or number");
 
            }else{
+               color=color.toUpperCase(Locale.ROOT);
 
                SecureRandom random = new SecureRandom();
                int choice=random.nextInt();
 
                if(choice%2==0){
 
-                   win="RED";
-
-                   Win=2l;
+                    if(color.equals("RED")) {
+                        Win = 2l;
+                    }
 
                }else{
 
-                   win="BLACK";
-
-                   Win=2l;
+                if(color.equals("BLACK")) {
+                    Win = 2l;
+                }
 
 
                }
@@ -107,17 +108,12 @@ public class GameOneController {
         }
 
 
-        BigDecimal newBalance=entity.getBalance().add(bet.multiply(new BigDecimal(String.valueOf(Win))));
 
-//        UserDto user=UserDto.builder()
-//                .id(entity.getId())
-//                .name(entity.getName())
-//                .surname(entity.getSurname())
-//                .email(entity.getEmail())
-//                .password(entity.getPassword())
-//                .balance(entity.getBalance())
-//                .build();
+        BigDecimal newBalance=entity.getBalance()
+                .add(bet.multiply(new BigDecimal(String.valueOf(Win))));
 
+
+        entity.setBalance(newBalance);
         userRepository.saveAndFlush(entity);
 
         response=GameOneDto.builder()
