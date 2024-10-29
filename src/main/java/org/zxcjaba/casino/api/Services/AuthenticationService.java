@@ -3,12 +3,14 @@ package org.zxcjaba.casino.api.Services;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.zxcjaba.casino.api.DTO.LoginDto;
 import org.zxcjaba.casino.api.DTO.RegistrationDto;
 import org.zxcjaba.casino.api.DTO.UserDto;
+import org.zxcjaba.casino.api.Exceptions.UsernameException;
 import org.zxcjaba.casino.persistence.Entity.UserEntity;
 import org.zxcjaba.casino.persistence.Repository.UserRepository;
 
@@ -52,7 +54,17 @@ public class AuthenticationService {
 
 
     public UserDto signUp(RegistrationDto registrationDto) {
-            UserEntity user=new UserEntity();
+
+            UserEntity user=userRepository.findByEmail(registrationDto.getEmail()).orElse(null);
+
+
+            if(user==null) {
+                user=new UserEntity();
+            }
+            else{
+                throw new UsernameException("User already exists");
+            }
+
 
             user.setEmail(registrationDto.getEmail());
             user.setName(registrationDto.getName());
