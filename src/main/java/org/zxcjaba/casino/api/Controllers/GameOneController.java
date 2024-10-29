@@ -118,8 +118,6 @@ public class GameOneController {
 //                .balance(entity.getBalance())
 //                .build();
 
-        entity.setBalance(newBalance);
-
         userRepository.saveAndFlush(entity);
 
         response=GameOneDto.builder()
