@@ -1,7 +1,5 @@
 package org.zxcjaba.casino.Math;
 
-import lombok.NoArgsConstructor;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;

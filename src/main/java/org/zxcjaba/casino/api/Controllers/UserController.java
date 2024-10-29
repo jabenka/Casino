@@ -28,6 +28,7 @@ public class UserController {
                 .surname(entity.getSurname())
                 .email(entity.getEmail())
                 .password(entity.getPassword())
+                .balance(entity.getBalance())
                 .build();
 
         return ResponseEntity.ok(dto);
