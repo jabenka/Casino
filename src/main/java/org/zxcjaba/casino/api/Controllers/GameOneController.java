@@ -21,6 +21,8 @@ import org.zxcjaba.casino.persistence.Repository.UserRepository;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 
+import static java.lang.Math.abs;
+
 @RestController
 @RequestMapping("/roulette")
 @Transactional
@@ -74,21 +76,26 @@ public class GameOneController {
            }else{
 
                SecureRandom random = new SecureRandom();
-               int choice=random.nextInt();
+               int choice=abs(random.nextInt());
 
                if(choice%2==0){
 
                    win="RED";
-
-                   Win=2l;
+                    if(win.equals(color)) {
+                        Win = 2l;
+                    }else{
+                        Win=0l;
+                    }
 
                }else{
 
                    win="BLACK";
-
-                   Win=2l;
-
-
+                   if(win.equals(color)) {
+                       Win = 2l;
+                   }
+                   else{
+                       Win=0l;
+                   }
                }
             }
 
@@ -117,6 +124,9 @@ public class GameOneController {
 //                .password(entity.getPassword())
 //                .balance(entity.getBalance())
 //                .build();
+
+        entity.setBalance(newBalance);
+
 
         userRepository.saveAndFlush(entity);
 
