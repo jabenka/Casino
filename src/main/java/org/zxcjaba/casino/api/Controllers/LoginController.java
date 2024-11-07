@@ -2,10 +2,7 @@ package org.zxcjaba.casino.api.Controllers;
 
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zxcjaba.casino.api.DTO.LoginDto;
 import org.zxcjaba.casino.api.DTO.LoginResponse;
 import org.zxcjaba.casino.api.DTO.RegistrationDto;
@@ -26,13 +23,15 @@ public class LoginController {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
     }
-
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/signup")
     public ResponseEntity<UserDto> register(@RequestBody RegistrationDto registrationDto) {
+        System.out.println("User received: " + registrationDto.toString());
         UserDto user=authenticationService.signUp(registrationDto);
         return ResponseEntity.ok(user);
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginDto loginDto) {
         UserDto authenticatedUser=authenticationService.authenticate(loginDto);

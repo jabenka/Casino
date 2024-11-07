@@ -6,10 +6,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zxcjaba.casino.Math.PseudorandomNumbers;
 import org.zxcjaba.casino.api.DTO.GameOneDto;
 import org.zxcjaba.casino.api.DTO.UserDto;
@@ -38,7 +35,7 @@ public class GameOneController {
 
 
 
-    @GetMapping("/play")
+    @PostMapping("/play")
     public ResponseEntity<GameOneDto> play(@RequestParam(name="bet") BigDecimal bet,@RequestParam(name = "color",required = false) String color,
                                            @RequestParam(name = "number",required = false) Integer number) throws BadRequestException {
 
@@ -69,6 +66,7 @@ public class GameOneController {
 
         if(color!=null) {
 
+            color=color.toUpperCase();
            if(number!=null) {
 
                throw new RolutteException("you can only choose color or number");
@@ -82,19 +80,19 @@ public class GameOneController {
 
                    win="RED";
                     if(win.equals(color)) {
-                        Win = 2l;
+                        Win = 2L;
                     }else{
-                        Win=0l;
+                        Win= 0L;
                     }
 
                }else{
 
                    win="BLACK";
                    if(win.equals(color)) {
-                       Win = 2l;
+                       Win = 2L;
                    }
                    else{
-                       Win=0l;
+                       Win= 0L;
                    }
                }
             }
@@ -105,7 +103,7 @@ public class GameOneController {
 
             if(number.equals(ind)){
 
-                Win=5l;
+                Win= 5L;
 
             }
 
@@ -116,14 +114,7 @@ public class GameOneController {
 
         BigDecimal newBalance=entity.getBalance().add(bet.multiply(new BigDecimal(String.valueOf(Win))));
 
-//        UserDto user=UserDto.builder()
-//                .id(entity.getId())
-//                .name(entity.getName())
-//                .surname(entity.getSurname())
-//                .email(entity.getEmail())
-//                .password(entity.getPassword())
-//                .balance(entity.getBalance())
-//                .build();
+
 
         entity.setBalance(newBalance);
 
@@ -134,6 +125,8 @@ public class GameOneController {
                 .bet(bet)
                 .newBalance(newBalance)
                 .build();
+
+        System.out.println("Response:"+response.toString());
 
         return ResponseEntity.ok(response);
     }
