@@ -3,6 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import checkAuth from './utils/checkAuth';
+import checkToken from './utils/checkToken'; // проверка валидности токена
 import styles from './styles/Home.module.css';
 
 const Home: React.FC = () => {
@@ -16,11 +17,23 @@ const Home: React.FC = () => {
         }
     };
 
+    const navigateToGames = () => {
+        if (checkAuth()) {
+            if (checkToken()) {
+                router.push('/games'); // Перенаправление на страницу игр
+            } else {
+                router.push('/login'); // Перенаправление на страницу логина при недействительном токене
+            }
+        } else {
+            router.push('/register'); // Перенаправление на страницу регистрации
+        }
+    };
+
     return (
         <div className={styles.container}>
             <header className={styles.header}>
                 <div className={styles.leftButton}>
-                    <button className={styles.button}>Игры</button>
+                    <button className={styles.button} onClick={navigateToGames}>Игры</button>
                 </div>
                 <div className={styles.rightButton}>
                     <button className={styles.button} onClick={navigateToAccount}>Личный кабинет</button>
@@ -37,6 +50,6 @@ const Home: React.FC = () => {
             </footer>
         </div>
     );
-}
+};
 
 export default Home;

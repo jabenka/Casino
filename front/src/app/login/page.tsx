@@ -35,7 +35,7 @@ const Login: React.FC = () => {
         }
 
         try {
-            const response = await axios.post<LoginResponse>('http://your-spring-backend/api/login', { email, password });
+            const response = await axios.post<LoginResponse>('http://localhost:9120/auth/login', { email, password });
             const token = response.data.token;
             localStorage.setItem('jwtToken', token);
             router.push('/account');
