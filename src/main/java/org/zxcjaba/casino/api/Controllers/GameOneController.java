@@ -36,8 +36,8 @@ public class GameOneController {
 
 
     @PostMapping("/play")
-    public ResponseEntity<GameOneDto> play(@RequestParam(name="bet") BigDecimal bet,@RequestParam(name = "color",required = false) String color,
-                                           @RequestParam(name = "number",required = false) Integer number) throws BadRequestException {
+    public ResponseEntity<GameOneDto> play(@RequestParam(name="bet") BigDecimal bet,
+                                           @RequestParam(name = "number",required = false) String number) throws BadRequestException {
 
 
 
@@ -52,6 +52,7 @@ public class GameOneController {
             entity.setBalance(entity.getBalance().subtract(bet));
         }
 
+        System.out.println(number);
 
         //check
 
@@ -60,70 +61,39 @@ public class GameOneController {
         Long ind= 0L;
         Long Win= 0L;
 
+        Short res=0;
 
-
-
-
-        if(color!=null) {
-
-            color=color.toUpperCase();
-           if(number!=null) {
-
-               throw new RolutteException("you can only choose color or number");
-
-           }else{
-
-               SecureRandom random = new SecureRandom();
-               int choice=abs(random.nextInt());
-
-               if(choice%2==0){
-
-                   win="RED";
-                    if(win.equals(color)) {
-                        Win = 2L;
-                    }else{
-                        Win= 0L;
-                    }
-
-               }else{
-
-                   win="BLACK";
-                   if(win.equals(color)) {
-                       Win = 2L;
-                   }
-                   else{
-                       Win= 0L;
-                   }
-               }
-            }
-
-        }else if(color==null&& number!=null) {
-
-            ind=numbers.generateValueForRoulette();
-
-            if(number.equals(ind)){
-
-                Win= 5L;
-
-            }
-
-        }else{
-            Win=0L;
+        try{
+            res=Short.valueOf(number);
+        }catch(NumberFormatException e){
+            throw new BadRequestException("Frontend server error");
         }
 
 
-        BigDecimal newBalance=entity.getBalance().add(bet.multiply(new BigDecimal(String.valueOf(Win))));
+
+        switch(res){
+            case 0:
+                break;
+            case 1:
+                entity.setBalance(bet.multiply(new BigDecimal("2")).add(entity.getBalance()));
+            break;
+            case 2:
+                entity.setBalance(bet.multiply(new BigDecimal("10")).add(entity.getBalance()));
+            break;
+        }
 
 
 
-        entity.setBalance(newBalance);
+
+
+
 
 
         userRepository.saveAndFlush(entity);
 
         response=GameOneDto.builder()
                 .bet(bet)
-                .newBalance(newBalance)
+                .newBalance(entity.getBalance())
                 .build();
 
         System.out.println("Response:"+response.toString());
