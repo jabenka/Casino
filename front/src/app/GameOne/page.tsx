@@ -1,139 +1,230 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useRouter } from 'next/navigation';
-import styles from '../styles/Roulette.module.css';
-import checkToken from "@/app/utils/checkToken";
+import React, { useRef, useState, useEffect } from "react";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import styles from "../styles/Roulette.module.css";
 
 interface BetResponse {
     bet: number;
     newBalance: number;
 }
 
-const Page: React.FC = () => {
-    const [result, setResult] = useState<number | null>(null);
-    const [betType, setBetType] = useState<string>('number');
-    const [betValue, setBetValue] = useState<string>('');
-    const [betAmount, setBetAmount] = useState<number>(0);
-    const [isSpinning, setIsSpinning] = useState<boolean>(false);
-    const [balance, setBalance] = useState<number>(0);
+const RoulettePage: React.FC = () => {
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const [isSpinning, setIsSpinning] = useState(false);
+    const [rotationAngle] = useState(0);
+    const [result, setResult] = useState<string | null>(null); // Результат
+    const [betType, setBetType] = useState<string>("number");
+    const [betValue, setBetValue] = useState<string>(""); // Значение ставки
+    const [betAmount, setBetAmount] = useState<number>(0); // Сумма ставки
+    const [balance, setBalance] = useState<number>(0); // Баланс
     const router = useRouter();
 
-    // Проверка токена
-    const validateToken = async () => {
-        const token = localStorage.getItem('jwtToken');
+    let Color: string | null = null;
+
+    // Функция для определения результата рулетки
+    const getRouletteResult = (angle: number): number => {
+        const segmentAngle = 360 / 36;
+        const normalizedAngle = angle % 360;
+        const segmentNumber = Math.floor((360 - normalizedAngle) / segmentAngle);
+        return segmentNumber === 0 ? 36 : segmentNumber; // Нулевой сегмент соответствует номеру 36
+    };
+
+    // Функция для рисования колеса
+    const drawWheel = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
+        const numSegments = 36;
+        const radius = Math.min(width, height) / 2;
+        const angle = (2 * Math.PI) / numSegments;
+
+        for (let i = 0; i < numSegments; i++) {
+            ctx.beginPath();
+            ctx.moveTo(width / 2, height / 2);
+            ctx.arc(width / 2, height / 2, radius, angle * i, angle * (i + 1));
+            ctx.lineTo(width / 2, height / 2);
+            ctx.fillStyle = i % 2 === 1 ? "red" : "black";
+            ctx.fill();
+        }
+
+        for (let i = 0; i < numSegments; i++) {
+            const angleOffset = angle * i + angle / 2;
+            const x = width / 2 + Math.cos(angleOffset) * (radius - 30);
+            const y = height / 2 + Math.sin(angleOffset) * (radius - 30);
+            ctx.fillStyle = "white";
+            ctx.font = "bold 16px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(i === 0 ? "1" : (i + 1).toString(), x, y);
+        }
+    };
+
+    // Функция для анимации вращения колеса
+    const spinWheel = async () => {
+        if (isSpinning) return;
+        setIsSpinning(true);
+
+        let angle = rotationAngle;
+        let velocity = Math.random() * 10 + 5;
+        const friction = 0.99;
+        const spinDuration = 3000;
+
+        const startTime = Date.now();
+
+        const rotate = () => {
+            const elapsedTime = Date.now() - startTime;
+
+            if (elapsedTime >= spinDuration) {
+                setIsSpinning(false);
+                let resultNumber = getRouletteResult(angle) - 8;
+                if (resultNumber <= 0) {
+                    let prev = resultNumber;
+                    resultNumber = 36;
+                    if (prev != 0) {
+
+                    for (let i = 1; prev <= 0; i++) {
+                        resultNumber = resultNumber - i;
+                        prev = prev + i;
+                    }
+                }
+                }
+
+                console.log(resultNumber);
+                const color = resultNumber % 2 === 0 ? "Red" : "Black";
+                console.log(color);
+
+                Color = color === "Red" ? "Красный" : "Черный";
+                console.log(Color);
+
+                setResult(betType === "color" ? Color : resultNumber.toString());
+                checkWin(resultNumber, Color); // Проверяем, победил ли игрок
+                return;
+            }
+
+            angle += velocity;
+            velocity *= friction;
+
+            if (canvasRef.current) {
+                const ctx = canvasRef.current.getContext("2d");
+                if (ctx) {
+                    ctx.save();
+                    ctx.translate(canvasRef.current.width / 2, canvasRef.current.height / 2);
+                    ctx.rotate((angle * Math.PI) / 180);
+                    ctx.translate(-canvasRef.current.width / 2, -canvasRef.current.height / 2);
+                    drawWheel(ctx, canvasRef.current.width, canvasRef.current.height);
+                    ctx.restore();
+                }
+            }
+
+            if (elapsedTime < spinDuration) {
+                requestAnimationFrame(rotate);
+            }
+        };
+
+        rotate();
+    };
+
+    // Функция отправки данных о ставке на сервер
+    const sendBetData = async (resultType: number) => {
+        const token = localStorage.getItem("jwtToken");
         if (!token) {
-            alert('Токен не найден, пожалуйста, войдите в систему.');
-            router.push('/login');
-            return false;
+            alert("Токен не найден, пожалуйста, войдите в систему.");
+            router.push("/login");
+            return;
         }
 
         try {
-            const response = await axios.get('http://localhost:9120/auth/validate', {
+            const params = new URLSearchParams();
+            params.append("bet", betAmount.toString());
+            params.append("number", resultType.toString()); // Тип результата: 1 (цвет), 2 (число), 0 (проигрыш)
+
+
+            const response = await axios.post<BetResponse>(
+                `http://localhost:9120/roulette/play?${params.toString()}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    withCredentials: true,
+                }
+            );
+
+            if (response.data) {
+                setBalance(response.data.newBalance); // Обновляем баланс на клиенте, если это нужно
+            }
+        } catch (error) {
+            console.error("Error sending bet data:", error);
+        }
+    };
+
+    // Функция проверки, победил ли пользователь
+    const checkWin = (resultNumber: number, color: string | null) => {
+        let resultType = 0; // 0 — проиграл, 1 — выиграл по цвету, 2 — выиграл по числу
+
+        if (betType === "number") {
+            if (betValue === resultNumber.toString()) {
+                resultType = 2; // Выиграл по числу
+            } else {
+            }
+        } else if (betType === "color") {
+            if ((color === "Красный" && betValue === "red") || (color === "Черный" && betValue === "black")) {
+                resultType = 1; // Выиграл по цвету
+            } else {
+            }
+        }
+        console.log(betType,)
+       sendBetData(resultType);
+
+
+
+
+    };
+
+    // Загрузка баланса при старте
+    const fetchBalanceFromDTO = async () => {
+        const token = localStorage.getItem("jwtToken");
+        if (!token) {
+            alert("Токен не найден, пожалуйста, войдите в систему.");
+            router.push("/login");
+            return;
+        }
+
+        try {
+            const response = await axios.get<BetResponse>("http://localhost:9120/user/balance", {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
                 },
-                withCredentials: true
+                withCredentials: true,
             });
 
-            if (response.status !== 200) {
-                throw new Error('Токен недействителен');
-            }
-
-            return true;
+            setBalance(response.data.newBalance);
         } catch (error) {
-            alert('Недействительный токен, пожалуйста, войдите в систему снова.');
-            console.log(error);
-            router.push('/login');
-            return false;
+            console.error("Error fetching balance:", error);
         }
     };
 
     useEffect(() => {
-        const fetchBalanceFromDTO = async () => {
-            if (!(await validateToken())) return;
-
-            try {
-                const token = localStorage.getItem('jwtToken');
-                if(checkToken()) {
-                    const response = await axios.get<BetResponse>('http://localhost:9120/user/balance', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        },
-                        withCredentials: true
-                    });
-                    setBalance(response.data.newBalance);
-                }
-            } catch (error) {
-                console.error('Error fetching balance:', error);
-            }
-        };
-
         fetchBalanceFromDTO();
+
+        // Нарисовать колесо при загрузке
+        if (canvasRef.current) {
+            const ctx = canvasRef.current.getContext("2d");
+            if (ctx) {
+                drawWheel(ctx, canvasRef.current.width, canvasRef.current.height);
+            }
+        }
     }, []);
 
-    // Функция для вращения колеса
-    const spinWheel = async () => {
-        if (!(await validateToken())) return;
-
-        setIsSpinning(true);
-        const outcome = Math.floor(Math.random() * 5) + 1; // Результат от 1 до 5
-        setResult(outcome);
-
-        // Остановить анимацию после 3 секунд
-        setTimeout(() => {
-            setIsSpinning(false);
-            sendBetData();
-        }, 3000); // 3 секунды — время вращения
-    };
-
-    // Функция для отправки данных о ставке
-    const sendBetData = async () => {
-        if (!(await validateToken())) return;
-
-        try {
-            const token = localStorage.getItem('jwtToken');
-            const params = new URLSearchParams();
-            params.append('bet', betAmount.toString());
-
-            if (betType === 'number') {
-                params.append('number', betValue);
-            } else if (betType === 'color') {
-                params.append('color', betValue);
-            }
-
-            const response = await axios.post<BetResponse>(`http://localhost:9120/roulette/play?${params.toString()}`, {}, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                },
-                withCredentials: true
-            });
-
-            if (response.data) {
-                console.log('Response:', response.data);
-                setBalance(response.data.newBalance);
-                console.log('Новый баланс:', response.data.newBalance);
-            } else {
-                console.error('Response data is undefined');
-            }
-        } catch (error) {
-            console.error('Error sending bet data:', error);
-        }
-    };
-
-    // Обработчик изменения типа ставки
     const handleBetTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setBetType(e.target.value);
-        setBetValue('');
+        setBetValue("");
     };
 
-    // Навигация
     const navigateToHome = () => {
-        router.push('/');
+        router.push("/");
     };
 
     const navigateToAccount = () => {
-        router.push('/account');
+        router.push("/account");
     };
 
     return (
@@ -145,13 +236,9 @@ const Page: React.FC = () => {
             </header>
             <h1>Казино - Рулетка</h1>
 
-            {/* Колесо рулетки с анимацией */}
-            <div className={`${styles.component} ${isSpinning ? styles.spinning : ''}`}>
-                <div className={styles.option} style={{transform: 'rotate(72deg)', background: 'red'}}><div className={styles.row}>1</div></div>
-                <div className={styles.option} style={{transform: 'rotate(144deg)', background: 'black'}}><div className={styles.row}>2</div></div>
-                <div className={styles.option} style={{transform: 'rotate(-72deg)', background: 'red'}}><div className={styles.row}>3</div></div>
-                <div className={styles.option} style={{transform: 'rotate(-144deg)', background: 'black'}}><div className={styles.row}>4</div></div>
-                <div className={styles.option} style={{transform: 'rotate(0deg)', background: 'red'}}><div className={styles.row}>5</div></div>
+            <div className={styles.rouletteContainer}>
+                <canvas ref={canvasRef} width={400} height={400} className={styles.canvas} />
+                <div className={styles.arrow}></div>
             </div>
 
             <div className={styles.controls}>
@@ -163,7 +250,7 @@ const Page: React.FC = () => {
                     </select>
                 </label>
 
-                {betType === 'number' ? (
+                {betType === "number" ? (
                     <label className={styles.label}>
                         Номер:
                         <input
@@ -199,10 +286,13 @@ const Page: React.FC = () => {
                 <button onClick={spinWheel} className={styles.button}>Крутить</button>
             </div>
 
-            {/* Результат игры */}
-            {result !== null && <div className={styles.result}>Результат: {result}</div>}
+            {result !== null && (
+                <div className={styles.result}>
+                    Результат: {betType === "color" ? result : `Номер ${result}`}
+                </div>
+            )}
         </div>
     );
 };
 
-export default Page;
+export default RoulettePage;

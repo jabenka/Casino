@@ -1,34 +1,124 @@
-.wheel {
-    width: 300px;
-    height: 300px;
-    border: 10px solid black;
-    border-radius: 50%;
-    position: relative;
-    overflow: hidden;
+/* Основной контейнер с фоном */
+.container {
+    background-color:rgba(0, 0, 0, 0.81); /* Светлый серый фон */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    justify-content: flex-start;
+    padding: 20px;
 }
 
-.segment {
-    width: 50%;
-    height: 50%;
+/* Заголовок в шапке */
+.header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.balance {
+    font-weight: bold;
+}
+
+.button {
+    background-color: #ff8c00; /* Цвет кнопок казино */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #ff6600; /* Цвет кнопки при наведении */
+}
+
+/* Для стрелочек - убираем их */
+.arrow {
     position: absolute;
-    top: 50%;
+    top: 10px; /* Позиция стрелки сверху */
     left: 50%;
-    transform-origin: 0 0;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 20px solid #fffdfd;
 }
 
-.red {
-    background-color: red;
+/* Контейнер для рулетки */
+.rouletteContainer {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    position: relative;
 }
 
-.black {
-    background-color: black;
+/* Стили для канваса с рулеткой */
+.canvas {
+    border: 10px solid white; /* Белая обводка вокруг колеса */
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Контейнер с элементами управления */
+.controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
-.spinning {
-    animation: spin 3s ease-out;
+/* Стили для инпутов */
+.label {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* Подсказка для типа ставки */
+.select {
+    padding: 8px;
+    border: 1px solid #707070;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 150px;
+    background-color: #706f6f;
+    margin-top: 5px;
+    color: #888; /* Серый текст в выпадающем меню */
+}
+
+/* Подсказка для типа ставки */
+.select option {
+    color: #888; /* Серый цвет для текста в опциях */
+}
+
+/* Стиль для подсказки в типе ставки */
+.select[title]:hover {
+    background-color: #333131; /* При наведении на выпадающий список подсказка будет менять цвет фона */
+}
+
+/* Стили для инпутов */
+.input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 150px; /* Увеличиваем ширину для удобства */
+    background-color:#706f6f;
+}
+
+/* Результат */
+.result {
+    font-size: 18px;
+    font-weight: bold;
+    color: #868383;
+    margin-top: 20px;
 }
