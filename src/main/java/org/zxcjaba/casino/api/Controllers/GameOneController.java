@@ -1,24 +1,19 @@
 package org.zxcjaba.casino.api.Controllers;
 
-
 import jakarta.transaction.Transactional;
 import org.apache.coyote.BadRequestException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.zxcjaba.casino.Math.PseudorandomNumbers;
 import org.zxcjaba.casino.api.DTO.GameOneDto;
-import org.zxcjaba.casino.api.DTO.UserDto;
+import org.zxcjaba.casino.api.DTO.GameResultsDto;
 import org.zxcjaba.casino.api.Exceptions.BalanceException;
-import org.zxcjaba.casino.api.Exceptions.RolutteException;
 import org.zxcjaba.casino.persistence.Entity.UserEntity;
 import org.zxcjaba.casino.persistence.Repository.UserRepository;
-
 import java.math.BigDecimal;
-import java.security.SecureRandom;
 
-import static java.lang.Math.abs;
 
 @RestController
 @RequestMapping("/roulette")
@@ -26,18 +21,19 @@ import static java.lang.Math.abs;
 public class GameOneController {
 
     private final UserRepository userRepository;
-    private final PseudorandomNumbers numbers;
+    private final RabbitTemplate rabbitTemplate;
 
-    public GameOneController(UserRepository userRepository, PseudorandomNumbers numbers) {
+    public GameOneController(UserRepository userRepository, RabbitTemplate rabbitTemplate) {
         this.userRepository = userRepository;
-        this.numbers = numbers;
+        this.rabbitTemplate = rabbitTemplate;
     }
-
 
 
     @PostMapping("/play")
     public ResponseEntity<GameOneDto> play(@RequestParam(name="bet") BigDecimal bet,
-                                           @RequestParam(name = "number",required = false) String number) throws BadRequestException {
+                                           @RequestParam(name = "number",required = true) String number,
+                                           @RequestParam(name="color")String color,
+                                           @RequestParam(name="rouletteNumber")String rouletteNumber) throws BadRequestException {
 
 
 
@@ -52,15 +48,15 @@ public class GameOneController {
             entity.setBalance(entity.getBalance().subtract(bet));
         }
 
-        System.out.println(number);
+        GameResultsDto results=GameResultsDto.builder()
+                .bet(bet)
+                .color(color)
+                .rouletteNumber(rouletteNumber)
+                .build();
 
         //check
 
-        GameOneDto response=new GameOneDto();
-        String win="";
-        Long ind= 0L;
-        Long Win= 0L;
-
+        GameOneDto response;
         Short res=0;
 
         try{
@@ -68,8 +64,6 @@ public class GameOneController {
         }catch(NumberFormatException e){
             throw new BadRequestException("Frontend server error");
         }
-
-
 
         switch(res){
             case 0:
@@ -82,21 +76,13 @@ public class GameOneController {
             break;
         }
 
-
-
-
-
-
-
-
         userRepository.saveAndFlush(entity);
 
         response=GameOneDto.builder()
                 .bet(bet)
                 .newBalance(entity.getBalance())
                 .build();
-
-        System.out.println("Response:"+response.toString());
+        rabbitTemplate.convertAndSend("game_result_queue",results);
 
         return ResponseEntity.ok(response);
     }
