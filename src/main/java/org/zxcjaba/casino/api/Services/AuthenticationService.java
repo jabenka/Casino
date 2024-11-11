@@ -74,6 +74,10 @@ public class AuthenticationService {
 
             userRepository.saveAndFlush(user);
 
+            if(user.getId()==null){
+                user.setId(-1L);
+            }
+
             return UserDto.builder()
                     .id(user.getId())
                     .name(user.getName())

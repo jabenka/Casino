@@ -5,6 +5,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -17,10 +18,11 @@ import java.util.function.Function;
 
 @Service
 public class JwtService {
-
+    @Getter
+    @Setter
     @Value("${jwt.secret}")
     private String secret;
-
+    @Setter
     @Getter
     @Value("${jwt.expiration-time}")
     long expirationTime;
@@ -64,7 +66,7 @@ public class JwtService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    private boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 

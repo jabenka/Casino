@@ -43,7 +43,7 @@ public class GameOneController {
         UserEntity entity = (UserEntity) authentication.getPrincipal();
 
         if(entity.getBalance().compareTo(bet) < 0) {
-            throw new BalanceException("Not enough money to play");
+            return ResponseEntity.badRequest().build();
         }else{
             entity.setBalance(entity.getBalance().subtract(bet));
         }
@@ -62,7 +62,7 @@ public class GameOneController {
         try{
             res=Short.valueOf(number);
         }catch(NumberFormatException e){
-            throw new BadRequestException("Frontend server error");
+            return ResponseEntity.badRequest().build();
         }
 
         switch(res){
