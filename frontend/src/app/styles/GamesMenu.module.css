@@ -1,0 +1,47 @@
+.container {
+    min-height: 100vh;
+    background-color:  rgba(0, 0, 0, 0.81);
+    color: orange;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-top: 1rem;
+}
+
+.title {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.gamesList {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gameCard {
+    background-color: #1c1c1c;
+    color: orange;
+    padding: 1rem;
+    margin: 1rem;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 300px;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.gameCard:hover {
+    background-color: #333;
+}
+
+.gameCard h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.gameCard p {
+    font-size: 1rem;
+}
