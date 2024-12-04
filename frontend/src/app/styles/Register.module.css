@@ -1,0 +1,128 @@
+/* Основной контейнер страницы */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 100vh;
+    background-color:  rgba(0, 0, 0, 0.81);
+    overflow: hidden; /* Чтобы не было скролла на странице */
+}
+
+/* Заголовок и кнопки */
+.header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 20px;
+    background-color: #333;
+    color: white;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10; /* Чтобы кнопки были сверху */
+}
+
+.button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.button:hover {
+    background-color: #218838;
+}
+
+.balance {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Стили для рулетки */
+.rouletteContainer {
+    position: relative;
+    margin-top: 120px; /* Делаем отступ, чтобы не было перекрытия с кнопками */
+}
+
+.wheel {
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    border: 10px solid #333;
+    position: relative;
+    transform-origin: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* Это поможет избежать горизонтальных полос */
+}
+
+.segment {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    top: 0;
+    left: 50%;
+    transform-origin: 100% 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    clip-path: polygon(50% 50%, 100% 0%, 100% 100%, 50% 50%);
+    font-size: 20px;
+    color: white;
+    font-weight: bold;
+}
+
+.number {
+    position: absolute;
+    transform: translateY(20px);
+}
+
+/* Стрелка рулетки */
+.arrow {
+    position: absolute;
+    top: -25px; /* Стрелка будет находиться немного выше колеса */
+    left: 50%;
+    transform: translateX(-50%) rotate(180deg); /* Разворачиваем стрелку на 180 градусов */
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 20px solid red; /* Стрелка будет направлена вверх */
+}
+
+/* Управление ставками */
+.controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 50px; /* Увеличиваем отступ сверху */
+}
+
+.label {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.input, .select {
+    padding: 8px;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.button {
+    margin-top: 20px;
+}
+
+/* Результат вращения */
+.result {
+    margin-top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
